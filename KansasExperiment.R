@@ -1,3 +1,4 @@
+library(ggplot2)
 
 ## Did Revenues decrease?
 ## Data manually drawn from https://www.ksrevenue.org/prannualreport.html
@@ -25,12 +26,50 @@ Revplot <- ggplot(data = Krev, aes(x = year, y = revenue)) +
                         breaks = 10^9 * 4:8)
 
 Revplot
-## Plotting this shows a slight drop in 2012 when the cuts were implemented, and a sharp rise after 2016 when they were rolled back
+## Plotting this shows a slight drop in 2012 when the cuts were implemented, and a sharp rise after 2016 when they were rolled back.
 
 ## Did the economy grow slower than neighboring states and the US?
 ## Data table generated at https://www.bea.gov/data/gdp/gdp-state
 GDPgrowth <- read.csv("GDPGrowth.csv")
-## First glance at the table suggests Kansas grew slowly in relevant time period.
+KGDP <- t(GDPgrowth[GDPgrowth$GeoName == "Kansas"])
+PGDP <- t(GDPgrowth[GDPgrowth$GeoName == "Plains"])
+USGDP <- t(GDPgrowth[GDPgrowth$GeoName == "United States"])
+GDP <- cbind(USGDP, PGDP, KGDP, c(1998:2019))
+colnames(GDP) <- c("US", "Plains", "Kansas", "Year")
+rownames(GDP) <- NULL
+GDP <- GDP[GDP$Year >= 2009, ]
+
+
+GDPplot <- ggplot(data = GDP, aes(x = Year)) +
+    geom_smooth(aes(y = Kansas, color = "Kansas")) +
+    geom_smooth(aes(y = Plains, color = "Plains")) +
+    geom_smooth(aes(y = US, color = "US")) +
+    geom_line(aes(y = Kansas, color = "Kansas")) +
+    geom_line(aes(y = Plains, color = "Plains")) +
+    geom_line(aes(y = US, color = "US")) +
+    geom_point(aes(y = Kansas, color = "Kansas")) +
+    geom_point(aes(y = Plains, color = "Plains")) +
+    geom_point(aes(y = US, color = "US")) +
+    ggtitle("Growth in Effective GDP as a % of Previous Year") +
+    ylab("Growth (in percent)") +
+    xlab("Year") +
+    theme(
+        plot.title = element_text(face = "bold", hjust = 0.5),
+        axis.title.y = element_text(face = "bold"),
+        axis.title.x = element_text(face = "bold")
+    ) +
+    geom_rect(aes(xmin = 2012, xmax = 2017, ymin = -Inf, ymax = Inf),
+              fill = "red",
+              alpha = 0.01,
+              inherit.aes = FALSE
+    ) +
+    scale_x_continuous(breaks = c(2010, 2012, 2017, 2019)) +
+    scale_colour_manual("", 
+                        breaks = c("Kansas", "Plains", "US"),
+                        values = c("deepskyblue1", "mediumblue", "blueviolet"))
+GDPplot
+
+
 
 ## Did bond rating decrease?
 ## S&P Rating changed in 2014 https://www.spglobal.com/ratings/en/research/articles/190319-history-of-u-s-state-ratings-2185306 and has not gone back up yet

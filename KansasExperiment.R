@@ -25,25 +25,23 @@ Revplot <- ggplot(data = Krev, aes(x = year, y = revenue)) +
     scale_y_continuous(labels = paste(4:8, "B"),
                         breaks = 10^9 * 4:8)
 
-Revplot
-## Plotting this shows a slight drop in 2012 when the cuts were implemented, and a sharp rise after 2016 when they were rolled back.
+ggsave("Revplot.png", Revplot, device = "png")
+## Plotting this shows a drop in 2012 when the cuts were implemented, and a sharp rise after 2016 when they were rolled back.
 
 ## Did the economy grow slower than neighboring states and the US?
 ## Data table generated at https://www.bea.gov/data/gdp/gdp-state
 GDPgrowth <- read.csv("GDPGrowth.csv")
-KGDP <- t(GDPgrowth[GDPgrowth$GeoName == "Kansas"])
-PGDP <- t(GDPgrowth[GDPgrowth$GeoName == "Plains"])
-USGDP <- t(GDPgrowth[GDPgrowth$GeoName == "United States"])
+KGDP <- t(GDPgrowth[GDPgrowth$GeoName == "Kansas", 3:ncol(GDPgrowth)])
+PGDP <- t(GDPgrowth[GDPgrowth$GeoName == "Plains", 3:ncol(GDPgrowth)])
+USGDP <- t(GDPgrowth[GDPgrowth$GeoName == "United States", 3:ncol(GDPgrowth)])
 GDP <- cbind(USGDP, PGDP, KGDP, c(1998:2019))
 colnames(GDP) <- c("US", "Plains", "Kansas", "Year")
 rownames(GDP) <- NULL
-GDP <- GDP[GDP$Year >= 2009, ]
+GDP <- as.data.frame(GDP)
+GDP <- GDP[GDP$Year >= 2010, ]
 
 
 GDPplot <- ggplot(data = GDP, aes(x = Year)) +
-    geom_smooth(aes(y = Kansas, color = "Kansas")) +
-    geom_smooth(aes(y = Plains, color = "Plains")) +
-    geom_smooth(aes(y = US, color = "US")) +
     geom_line(aes(y = Kansas, color = "Kansas")) +
     geom_line(aes(y = Plains, color = "Plains")) +
     geom_line(aes(y = US, color = "US")) +
@@ -63,12 +61,12 @@ GDPplot <- ggplot(data = GDP, aes(x = Year)) +
               alpha = 0.01,
               inherit.aes = FALSE
     ) +
-    scale_x_continuous(breaks = c(2010, 2012, 2017, 2019)) +
+    scale_x_continuous(breaks = c(2010, 2012, 2014, 2016, 2017, 2018)) +
     scale_colour_manual("", 
                         breaks = c("Kansas", "Plains", "US"),
                         values = c("deepskyblue1", "mediumblue", "blueviolet"))
-GDPplot
-
+ggsave("GDPplot.png", GDPplot, device = "png")
+## This plot does not suggest that GDP Growth was substantially affected by the Kansas Experiment
 
 
 ## Did bond rating decrease?
@@ -107,8 +105,8 @@ Educplot <- ggplot(data = Keduc, aes(x = year)) +
     scale_colour_manual("", 
                         breaks = c("K-12 Education", "Higher Education"),
                         values = c("deepskyblue1", "mediumblue"))
-Educplot
-
+ggsave("Educplot.png", Educplot, device = "png")
+## These plots do not suggest that there was a substantial effect of the tax cuts on education expenditures
 
 ## Did they cut infrastructure spending?
 ## 
